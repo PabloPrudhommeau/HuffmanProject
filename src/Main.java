@@ -2,17 +2,14 @@
 public class Main {
 
     public Main() {
-        FileManager file = new FileManager();
-        file.load("res/file.txt");
-
-        FileEncoder encoder = new FileEncoder();
-        encoder.encode(file);
+        FileEncoder encoder = new FileEncoder("res/Les_miserables_Tome_I_Chapitre_1-5.txt");
+        encoder.encode();
 
     }
 
     public static void main(String[] args) {
 
-        System.out.println("Hello World!"); //commentaire
+        new Main();
 
     }
 }

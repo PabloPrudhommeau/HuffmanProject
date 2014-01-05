@@ -6,7 +6,7 @@ public class FileEncoder {
     private ArrayList<Node> tree;
     private String fileUrl;
     private int[] frequencyArrayLetters = new int[256];
-    private int[] arr2 = new int[256];
+    private char[] characterArray = new char[256];
 
     public FileEncoder(String url) {
         this.fileUrl = url;
@@ -20,7 +20,8 @@ public class FileEncoder {
                int i =0;
             for( i = 0; i < 256 ; i++) {
                 if(frequencyArrayLetters[i] != 0){
-                    System.out.println(frequencyArrayLetters[i]);
+                    System.out.println(characterArray[i]+" - "+ frequencyArrayLetters[i]);
+                    //System.out.println(frequencyArrayLetters[i]);
                 }
             }
 
@@ -42,6 +43,7 @@ public class FileEncoder {
         while(data != -1) {
             bytesCount++;
             frequencyArrayLetters[data]++;
+            this.characterArray[data] = (char) data;
             data = inputFile.read();
         }
 
@@ -67,22 +69,36 @@ public class FileEncoder {
 
     public void merge(int low, int mid, int high) {
         int h = low, i = low, j = mid+1, k;
+        int[] arr2 = new int[256];
+        char[] arr3 = new char[256];
+
         while ((h <= mid) && (j <= high)) {
             if (this.frequencyArrayLetters[h] <= this.frequencyArrayLetters[j]) {
-                arr2[i] = this.frequencyArrayLetters[h]; h++;
+                arr2[i] = this.frequencyArrayLetters[h];
+                arr3[i] = (char) i;
+                h++;
             }
             else {
-                arr2[i] = this.frequencyArrayLetters[j]; j++;
-            } i++;
+                arr2[i] = this.frequencyArrayLetters[j];
+                arr3[i] = (char) i;
+                j++;
+            }
+            i++;
         }
         if (h > mid) for (k=j; k<=high; k++) {
-            arr2[i] = this.frequencyArrayLetters[k]; i++;
+            arr2[i] = this.frequencyArrayLetters[k];
+            arr3[i] = (char) i;
+            i++;
         }
         else for (k=h; k<=mid; k++) {
-            arr2[i] = this.frequencyArrayLetters[k]; i++;
+            arr2[i] = this.frequencyArrayLetters[k];
+            arr3[i] = (char) i;
+            i++;
         }
-        for (k=low; k<=high; k++) this.frequencyArrayLetters[k] = arr2[k];
 
+        for (k=low; k<=high; k++)
+            this.frequencyArrayLetters[k] = arr2[k];
+            this.characterArray[k] = arr3[k];
     }
 
 }

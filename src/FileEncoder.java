@@ -5,6 +5,7 @@ import java.util.ListIterator;
 public class FileEncoder {
 
     private ArrayList<Node> nodeArray = new ArrayList<Node>();
+    private ArrayList<Node> binaryTable = new ArrayList<Node>();
     private String fileUrl;
     private int[] frequencyArrayLetters = new int[256];
     private char[] characterArray = new char[256];
@@ -23,14 +24,15 @@ public class FileEncoder {
 //        this.showTree();
 
         this.buildBinaryTable();
-        //this.showBinaryTable();
-        this.compressTxt();
+//        this.showBinaryTable();
+
+        this.exportBinaryTable();
     }
 
     public void buildFinalTree() {
         ListIterator<Node> it = nodeArray.listIterator();
         while(it.hasNext()){
-            Node leftNode = (Node) it.next();
+            Node leftNode = it.next();
             if(it.hasNext()){
                 Node rightNode = this.nodeArray.get(it.nextIndex());
                 Node sumNode = new Node();
@@ -46,6 +48,18 @@ public class FileEncoder {
     public void buildBinaryTable(){
         Node currentNode = this.nodeArray.get(this.nodeArray.size() - 1);
         currentNode.setBinaryCode(""); // Fonction récursive qui assigne une valeur binaire à chaque noeud
+    }
+
+    public void exportBinaryTable(){
+        for (Node node : nodeArray) {
+            if(node instanceof NodeCharacter){
+                this.binaryTable.add(node);
+            }
+        }
+    }
+
+    public ArrayList<Node> getBinaryTable(){
+        return this.binaryTable;
     }
 
     public void showTree(){
@@ -91,7 +105,7 @@ public class FileEncoder {
     }
 
     public void buildCharTree() {
-        InputStream inputFile = null;
+        InputStream inputFile;
         try {
             inputFile = new FileInputStream(fileUrl);
             int data = inputFile.read();
@@ -116,23 +130,45 @@ public class FileEncoder {
         this.sortTree();
     }
 
-    public void compressTxt() {
-        String compressed = new String();
-        InputStream inputFile = null;
+    public void write(String fileUrl){
         try {
-            inputFile = new FileInputStream(fileUrl);
-            int data = inputFile.read();
+            File file = new File(fileUrl);
+            file.createNewFile();
 
+            FileWriter fw = new FileWriter(fileUrl);
+            FileReader fr = new FileReader(this.fileUrl);
+            BufferedWriter bw = new BufferedWriter(fw);
+            BufferedReader br = new BufferedReader(fr);
+
+            int data = br.read();
             while(data != -1) {
-                compressed = compressed + this.nodeArray.get(data).getBinaryCode();
-                data = inputFile.read();
+                for(Node node : binaryTable){
+                    if(node instanceof NodeCharacter){
+                        NodeCharacter nodeCharacter = (NodeCharacter) node;
+                        if(nodeCharacter.getCharacter() == (char) data){
+                            bw.write(nodeCharacter.getBinaryCode());
+                        }
+                    }
+                }
+
+                data = br.read();
             }
 
-            System.out.println(compressed);
-        }
-        catch (FileNotFoundException e) {
+            for( int i = 0; i < 256 ; i++) {
+                this.characterArray[i] = (char) i;
+                if(this.frequencyArrayLetters[i] != 0){
+                    NodeCharacter nodeCharacter = new NodeCharacter(this.characterArray[i], this.frequencyArrayLetters[i]);
+                    this.nodeArray.add(nodeCharacter);
+                }
+            }
+
+            bw.close();
+            br.close();
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e){
             e.printStackTrace();
         }
     }

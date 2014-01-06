@@ -7,11 +7,16 @@ public class Main extends JFrame {
 
     private String selectedFile;
     private JLabel labelField = new JLabel();
+    private JPanel statistics = new JPanel();
 
     public Main() {
-        this.setSize(500, 130);
+        this.setSize(500, 150);
         this.getContentPane().setBackground(Color.darkGray);
         this.setLayout(new FlowLayout());
+        this.setResizable(false);
+
+        this.statistics.setBackground(Color.white);
+        this.statistics.setPreferredSize(new Dimension(500,50));
 
         JButton buttonFileCompressed = new JButton("Choix du fichier à compresser");
         buttonFileCompressed.addActionListener(new ActionListener() {
@@ -42,6 +47,15 @@ public class Main extends JFrame {
                     encoder.encode();
                     encoder.write(selectedFile + ".packed");
 
+                    float textInitialWeight = encoder.getTextCharacterNumber() * 8;
+                    float textCompressedWeight = encoder.getCompressedFileWeight();
+                    float compressionRatio = (textCompressedWeight / textInitialWeight) * 100;
+
+                    JLabel compressionRatioLabel = new JLabel("Taux de compression : " + String.valueOf(compressionRatio) + "% ");
+                    compressionRatioLabel.setForeground(Color.black);
+                    statistics.removeAll();
+                    statistics.add(compressionRatioLabel);
+
                     FileDecoder decoder = new FileDecoder(encoder.getBinaryTable(), selectedFile+".packed");
                     decoder.decode();
                     decoder.write(selectedFile+".unpacked");
@@ -54,6 +68,8 @@ public class Main extends JFrame {
         this.add(buttonFileCompressed);
         this.add(buttonLaunchCompression);
         this.add(labelField);
+
+        this.add(statistics);
 
         this.setVisible(true);
     }

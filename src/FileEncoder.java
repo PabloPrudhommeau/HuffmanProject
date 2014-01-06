@@ -7,29 +7,34 @@ public class FileEncoder {
     private ArrayList<Node> nodeArray = new ArrayList<Node>();
     private ArrayList<Node> binaryTable = new ArrayList<Node>();
     private String fileUrl;
+    private float compressionRatio;
+    private int compressedFileWeight;
+
     private int[] frequencyArrayLetters = new int[256];
     private char[] characterArray = new char[256];
+
+    private int textCharacterNumber;
 
     public FileEncoder(String url) {
         this.fileUrl = url;
     }
 
     public void encode() {
-
         this.buildCharTree();
 
-//        this.showTree();
         this.buildFinalTree();
-
-//        this.showTree();
+        this.showTree();
 
         this.buildBinaryTable();
-//        this.showBinaryTable();
+        this.showBinaryTable();
 
         this.exportBinaryTable();
+
+        this.calculateCompressedFileWeight();
     }
 
     public void buildFinalTree() {
+
         ListIterator<Node> it = nodeArray.listIterator();
         while(it.hasNext()){
             Node leftNode = it.next();
@@ -41,6 +46,16 @@ public class FileEncoder {
                 sumNode.setValue(leftNode.getValue() + rightNode.getValue());
                 it.add(sumNode);
                 this.sortTree();
+            }
+        }
+
+    }
+
+    public void calculateCompressedFileWeight(){
+        for(Node node : this.binaryTable){
+            if(node instanceof NodeCharacter){
+                NodeCharacter nodeCharacter = (NodeCharacter) node;
+                compressedFileWeight += nodeCharacter.getValue() * nodeCharacter.getBinaryCode().length();
             }
         }
     }
@@ -111,7 +126,8 @@ public class FileEncoder {
             int data = inputFile.read();
 
             while(data != -1) {
-                frequencyArrayLetters[data]++;
+                this.frequencyArrayLetters[data]++;
+                this.textCharacterNumber++;
                 data = inputFile.read();
             }
 
@@ -216,4 +232,27 @@ public class FileEncoder {
         }
     }
 
+    public float getCompressionRatio() {
+        return compressionRatio;
+    }
+
+    public void setCompressionRatio(float compressionRatio) {
+        this.compressionRatio = compressionRatio;
+    }
+
+    public int getTextCharacterNumber() {
+        return textCharacterNumber;
+    }
+
+    public void setTextCharacterNumber(int textCharacterNumber) {
+        this.textCharacterNumber = textCharacterNumber;
+    }
+
+    public int getCompressedFileWeight() {
+        return compressedFileWeight;
+    }
+
+    public void setCompressedFileWeight(int compressedFileWeight) {
+        this.compressedFileWeight = compressedFileWeight;
+    }
 }

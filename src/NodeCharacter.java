@@ -5,7 +5,10 @@ public class NodeCharacter extends Node {
 
     public NodeCharacter(char character, int frequency){
         this.character = character;
-        this.frequency = frequency;
+        this.value = frequency;
     }
 
+    public char getCharacter() {
+        return character;
+    }
 }

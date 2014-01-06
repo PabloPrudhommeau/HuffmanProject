@@ -1,9 +1,10 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 public class FileEncoder {
 
-    private ArrayList<Node> tree;
+    private ArrayList<Node> nodeArray = new ArrayList<Node>();
     private String fileUrl;
     private int[] frequencyArrayLetters = new int[256];
     private char[] characterArray = new char[256];
@@ -13,48 +14,103 @@ public class FileEncoder {
     }
 
     public void encode() {
+        this.buildCharTree();
+//        this.showTree();
+
+        this.buildFinalTree();
+//        this.showTree();
+
+        this.buildBinaryTable();
+        this.showBinaryTable();
+    }
+
+    public void buildFinalTree() {
+        ListIterator<Node> it = nodeArray.listIterator();
+        while(it.hasNext()){
+            Node leftNode = (Node) it.next();
+            if(it.hasNext()){
+                Node rightNode = this.nodeArray.get(it.nextIndex());
+                Node sumNode = new Node();
+                sumNode.setLeftNode(leftNode);
+                sumNode.setRightNode(rightNode);
+                sumNode.setValue(leftNode.getValue() + rightNode.getValue());
+                it.add(sumNode);
+                this.sortTree();
+            }
+        }
+    }
+
+    public void buildBinaryTable(){
+        Node currentNode = this.nodeArray.get(this.nodeArray.size() - 1);
+        currentNode.setBinaryCode(""); // Fonction récursive qui assigne une valeur binaire à chaque noeud
+    }
+
+    public void showTree(){
+        for (Node node : nodeArray) {
+            if(node instanceof NodeCharacter){
+                NodeCharacter nodeCharacter = (NodeCharacter) node;
+                if(nodeCharacter.getValue() != 0){
+                    System.out.println(nodeCharacter.getCharacter() + " - " + nodeCharacter.getValue());
+                }
+            } else {
+                System.out.println("SUM --> " + node.getValue());
+                if(node.getLeftNode() instanceof NodeCharacter){
+                    NodeCharacter nodeCharacter = (NodeCharacter) node.getLeftNode();
+                    System.out.println("--- LeftNode - " + nodeCharacter.getCharacter() + " - " + nodeCharacter.getValue());
+                } else {
+                    System.out.println("--- LeftNode - " + node.getLeftNode().getValue());
+                }
+
+                if(node.getRightNode() instanceof NodeCharacter){
+                    NodeCharacter nodeCharacter = (NodeCharacter) node.getRightNode();
+                    System.out.println("--- RightNode - " + nodeCharacter.getCharacter() + " - " + nodeCharacter.getValue());
+                } else {
+                    System.out.println("--- RightNode - " + node.getRightNode().getValue());
+                }
+            }
+        }
+        System.out.println("-----------\n\n\n");
+    }
+
+    public void showBinaryTable(){
+        for (Node node : nodeArray) {
+            if(node instanceof NodeCharacter){
+                NodeCharacter nodeCharacter = (NodeCharacter) node;
+                if(nodeCharacter.getValue() != 0){
+                    System.out.println(nodeCharacter.getCharacter() + " - " + nodeCharacter.getValue() + " - " + nodeCharacter.getBinaryCode());
+                }
+            }
+        }
+    }
+
+    public void sortTree(){
+        this.mergeSort(0, this.nodeArray.size() - 1);
+    }
+
+    public void buildCharTree() {
+        InputStream inputFile = null;
         try {
-            this.setLettersFrequency();
-            this.mergeSort(0, 255);
-            System.out.println("Merge Sort");
-               int i =0;
-            for( i = 0; i < 256 ; i++) {
-              if(frequencyArrayLetters[i] != 0 ){
-                    System.out.println(characterArray[i]+" - "+ frequencyArrayLetters[i]);
-               }
+            inputFile = new FileInputStream(fileUrl);
+            int data = inputFile.read();
+
+            while(data != -1) {
+                frequencyArrayLetters[data]++;
+                data = inputFile.read();
             }
 
+            for( int i = 0; i < 256 ; i++) {
+                this.characterArray[i] = (char) i;
+                if(this.frequencyArrayLetters[i] != 0){
+                    NodeCharacter nodeCharacter = new NodeCharacter(this.characterArray[i], this.frequencyArrayLetters[i]);
+                    this.nodeArray.add(nodeCharacter);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void sortFrequencyArrayLetters(){
-
-    }
-
-    public void setLettersFrequency() throws IOException {
-        InputStream inputFile = new FileInputStream(fileUrl);
-
-        int data = inputFile.read();
-        int bytesCount = 0;
-
-        while(data != -1) {
-            bytesCount++;
-            frequencyArrayLetters[data]++;
-            data = inputFile.read();
-        }
-
-        int charNumber = 0;
-        int i = 0;
-        for( i = 0; i < 256 ; i++) {
-            if(frequencyArrayLetters[i] != 0){
-                this.characterArray[i] = (char)i ;
-                System.out.println(characterArray[i]+" - "+ frequencyArrayLetters[i]);
-                charNumber++;
-            }
-        }
-
+        this.sortTree();
     }
 
     public void mergeSort(int low, int high) {
@@ -67,37 +123,36 @@ public class FileEncoder {
     }
 
     public void merge(int low, int mid, int high) {
-        int h = low, i = low, j = mid+1, k;
-        int[] arr2 = new int[256];
-        char[] arr3 = new char[256];
+        int h = low;
+        int i = low;
+        int j = mid + 1;
+        int k;
+
+        Node[] arr2 = new Node[this.nodeArray.size()];
 
         while ((h <= mid) && (j <= high)) {
-            if (this.frequencyArrayLetters[h] <= this.frequencyArrayLetters[j]) {
-                arr2[i] = this.frequencyArrayLetters[h];
-                arr3[i] = this.characterArray[h];
+            if (this.nodeArray.get(h).getValue() <= this.nodeArray.get(j).getValue()) {
+                arr2[i] = this.nodeArray.get(h);
                 h++;
             }
             else {
-                arr2[i] = this.frequencyArrayLetters[j];
-                arr3[i] = this.characterArray[j];
+                arr2[i] = this.nodeArray.get(j);
                 j++;
             }
             i++;
         }
+
         if (h > mid) for (k=j; k<=high; k++) {
-            arr2[i] = this.frequencyArrayLetters[k];
-            arr3[i] =  this.characterArray[k];
+            arr2[i] = this.nodeArray.get(k);
             i++;
         }
         else for (k=h; k<=mid; k++) {
-            arr2[i] = this.frequencyArrayLetters[k];
-            arr3[i] =  this.characterArray[k];
+            arr2[i] = this.nodeArray.get(k);
             i++;
         }
 
         for (k=low; k<=high; k++)  {
-            this.characterArray[k] = arr3[k];
-            this.frequencyArrayLetters[k] = arr2[k];
+            this.nodeArray.set(k, arr2[k]);
         }
     }
 

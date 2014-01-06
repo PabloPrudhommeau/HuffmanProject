@@ -14,14 +14,17 @@ public class FileEncoder {
     }
 
     public void encode() {
-        this.buildCharTree();
-//        this.showTree();
 
+        this.buildCharTree();
+
+//        this.showTree();
         this.buildFinalTree();
+
 //        this.showTree();
 
         this.buildBinaryTable();
-        this.showBinaryTable();
+        //this.showBinaryTable();
+        this.compressTxt();
     }
 
     public void buildFinalTree() {
@@ -111,6 +114,27 @@ public class FileEncoder {
             e.printStackTrace();
         }
         this.sortTree();
+    }
+
+    public void compressTxt() {
+        String compressed = new String();
+        InputStream inputFile = null;
+        try {
+            inputFile = new FileInputStream(fileUrl);
+            int data = inputFile.read();
+
+            while(data != -1) {
+                compressed = compressed + this.nodeArray.get(data).getBinaryCode();
+                data = inputFile.read();
+            }
+
+            System.out.println(compressed);
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void mergeSort(int low, int high) {

@@ -10,6 +10,7 @@ public class Main extends JFrame {
 
     public Main() {
         this.setSize(500, 130);
+        this.getContentPane().setBackground(Color.darkGray);
         this.setLayout(new FlowLayout());
 
         JButton buttonFileCompressed = new JButton("Choix du fichier à compresser");
@@ -20,7 +21,7 @@ public class Main extends JFrame {
                 chooser.setApproveButtonText("Choix du fichier à compresser");
                 if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
                     selectedFile = chooser.getSelectedFile().getAbsolutePath();
-                    labelField.setForeground(Color.gray);
+                    labelField.setForeground(Color.white);
                     labelField.setText("Fichier choisi : "+selectedFile);
                 }
             }
